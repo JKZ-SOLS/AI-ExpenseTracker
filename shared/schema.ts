@@ -9,6 +9,7 @@ export const categories = pgTable("categories", {
   type: text("type", { enum: ["income", "expense"] }).notNull(),
   description: text("description"),
   icon: text("icon").notNull().default("ri-file-list-line"),
+  color: text("color"),
 });
 
 export const insertCategorySchema = createInsertSchema(categories).omit({

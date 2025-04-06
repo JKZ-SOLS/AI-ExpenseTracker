@@ -1,21 +1,31 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../hooks/useTheme';
+import { useExpense } from '../context/ExpenseContext';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/toggle';
+import { Switch } from '@/components/ui/switch';
+import { FileUp, FileDown } from 'lucide-react';
+import * as XLSX from 'xlsx';
+import { formatCurrency, formatDate } from '@/lib/utils';
 
 const SettingsPage = () => {
   const { settings, updateSettings, logout, changePin } = useAuth();
   const { toggleTheme, isDarkMode } = useTheme();
   const { toast } = useToast();
+  const { transactions, categories, addTransaction, addCategory } = useExpense();
   
   const [isPinDialogOpen, setIsPinDialogOpen] = useState(false);
   const [currentPin, setCurrentPin] = useState('');
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const fileInputRef = useState<HTMLInputElement | null>(null);
   
   const handleCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     updateSettings({ ...settings, currency: e.target.value });
@@ -80,8 +90,167 @@ const SettingsPage = () => {
     });
   };
   
-  const handleLogout = () => {
+  const handleExit = () => {
+    // On mobile, this would close the app
     logout();
+  };
+  
+  // Function to export transactions to Excel
+  const exportToExcel = () => {
+    // Filter transactions by selected month and year
+    const filteredTransactions = transactions.filter(transaction => {
+      const transactionDate = new Date(transaction.date);
+      return (
+        transactionDate.getMonth() === selectedMonth && 
+        transactionDate.getFullYear() === selectedYear
+      );
+    });
+    
+    if (filteredTransactions.length === 0) {
+      toast({
+        variant: "destructive",
+        title: "No data to export",
+        description: "There are no transactions for the selected month and year.",
+      });
+      setIsExportDialogOpen(false);
+      return;
+    }
+    
+    // Prepare data for export
+    const worksheetData = filteredTransactions.map(transaction => {
+      // Find category name
+      const category = categories.find(cat => cat.id === transaction.categoryId);
+      
+      return {
+        'Date': formatDate(transaction.date),
+        'Type': transaction.type,
+        'Category': category ? category.name : 'Unknown',
+        'Amount': transaction.amount,
+        'Amount (Formatted)': formatCurrency(transaction.amount, settings.currency),
+        'Description': transaction.description || '-'
+      };
+    });
+    
+    // Create workbook and worksheet
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Transactions');
+    
+    // Generate filename with month and year
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+      'July', 'August', 'September', 'October', 'November', 'December'];
+    const filename = `Expenses_${monthNames[selectedMonth]}_${selectedYear}.xlsx`;
+    
+    // Export file
+    XLSX.writeFile(workbook, filename);
+    setIsExportDialogOpen(false);
+    
+    toast({
+      title: "Export successful",
+      description: `Transactions exported to ${filename}`,
+    });
+  };
+  
+  // Function to handle file import
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: 'array' });
+        
+        // Get first worksheet
+        const worksheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[worksheetName];
+        
+        // Convert to JSON
+        const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet);
+        
+        if (jsonData.length === 0) {
+          toast({
+            variant: "destructive",
+            title: "Import failed",
+            description: "The file doesn't contain any data or is in an invalid format.",
+          });
+          return;
+        }
+        
+        // Check if the data has the expected fields
+        const requiredFields = ['Date', 'Type', 'Category', 'Amount', 'Description'];
+        const hasRequiredFields = requiredFields.every(field => 
+          jsonData[0].hasOwnProperty(field) || 
+          jsonData[0].hasOwnProperty(field.toLowerCase())
+        );
+        
+        if (!hasRequiredFields) {
+          toast({
+            variant: "destructive",
+            title: "Import failed",
+            description: "The file format is invalid. Please use a file exported from this app.",
+          });
+          return;
+        }
+        
+        // Keep track of imported items
+        let importedCount = 0;
+        let categoriesCreated = 0;
+        
+        // Process data and add transactions
+        for (const item of jsonData) {
+          // First, ensure the category exists
+          const categoryName = item.Category || item.category;
+          let categoryId;
+          
+          const existingCategory = categories.find(cat => 
+            cat.name.toLowerCase() === categoryName.toLowerCase()
+          );
+          
+          if (existingCategory) {
+            categoryId = existingCategory.id;
+          } else {
+            // Create a new category
+            const newCategory = await addCategory({
+              name: categoryName,
+              type: "expense", // Default to expense type for imported categories
+              icon: 'default',
+              color: '#00A226'
+            });
+            categoryId = newCategory.id;
+            categoriesCreated++;
+          }
+          
+          // Create the transaction
+          await addTransaction({
+            date: new Date(item.Date || item.date),
+            type: item.Type || item.type,
+            amount: parseFloat(item.Amount || item.amount),
+            categoryId,
+            description: item.Description || item.description || ''
+          });
+          
+          importedCount++;
+        }
+        
+        setIsImportDialogOpen(false);
+        
+        toast({
+          title: "Import successful",
+          description: `Imported ${importedCount} transactions and created ${categoriesCreated} new categories.`,
+        });
+      } catch (error) {
+        console.error('Import error:', error);
+        toast({
+          variant: "destructive",
+          title: "Import failed",
+          description: "An error occurred while importing the file.",
+        });
+      }
+    };
+    
+    reader.readAsArrayBuffer(file);
   };
   
   return (
@@ -91,14 +260,26 @@ const SettingsPage = () => {
           <h1 className="text-2xl font-semibold">Settings</h1>
         </div>
         
-        {/* Profile Section */}
-        <div className="glass-card rounded-xl p-5 mb-6 flex items-center">
-          <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center mr-4">
-            <span className="text-xl font-semibold text-primary">US</span>
-          </div>
-          <div>
-            <h2 className="font-semibold">User</h2>
-            <p className="text-xs opacity-60">Personal Expense Tracker</p>
+        {/* Data Management Section */}
+        <div className="glass-card rounded-xl p-5 mb-6">
+          <h2 className="font-semibold mb-4">Data Management</h2>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <button 
+              onClick={() => setIsExportDialogOpen(true)}
+              className="flex flex-col items-center justify-center p-4 bg-[#00A226]/10 rounded-xl border border-[#00A226]/30 hover:bg-[#00A226]/20 transition-colors"
+            >
+              <FileDown className="w-8 h-8 mb-2 text-[#00A226]" />
+              <span className="text-sm font-medium">Export Data</span>
+            </button>
+            
+            <button 
+              onClick={() => setIsImportDialogOpen(true)}
+              className="flex flex-col items-center justify-center p-4 bg-[#00A226]/10 rounded-xl border border-[#00A226]/30 hover:bg-[#00A226]/20 transition-colors"
+            >
+              <FileUp className="w-8 h-8 mb-2 text-[#00A226]" />
+              <span className="text-sm font-medium">Import Data</span>
+            </button>
           </div>
         </div>
         
@@ -189,12 +370,12 @@ const SettingsPage = () => {
           </div>
         </div>
         
-        {/* Logout Button */}
+        {/* Exit App Button */}
         <button 
           className="w-full py-3 bg-danger/10 text-danger font-medium rounded-xl mb-6"
-          onClick={handleLogout}
+          onClick={handleExit}
         >
-          Log Out
+          Exit App
         </button>
       </div>
       
@@ -241,6 +422,96 @@ const SettingsPage = () => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsPinDialogOpen(false)}>Cancel</Button>
             <Button onClick={handlePinChange}>Change PIN</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Export Dialog */}
+      <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Export Transactions</DialogTitle>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Select the month and year of transactions you want to export to Excel.
+            </p>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Month</label>
+                <select 
+                  className="w-full p-2 rounded-md border border-neutral-300/30 dark:border-neutral-600/30 bg-transparent"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                >
+                  <option value={0}>January</option>
+                  <option value={1}>February</option>
+                  <option value={2}>March</option>
+                  <option value={3}>April</option>
+                  <option value={4}>May</option>
+                  <option value={5}>June</option>
+                  <option value={6}>July</option>
+                  <option value={7}>August</option>
+                  <option value={8}>September</option>
+                  <option value={9}>October</option>
+                  <option value={10}>November</option>
+                  <option value={11}>December</option>
+                </select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Year</label>
+                <select 
+                  className="w-full p-2 rounded-md border border-neutral-300/30 dark:border-neutral-600/30 bg-transparent"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                >
+                  {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - 5 + i).map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsExportDialogOpen(false)}>Cancel</Button>
+            <Button 
+              className="bg-[#00A226] hover:bg-[#00A226]/80"
+              onClick={exportToExcel}
+            >
+              Export
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Import Dialog */}
+      <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Import Transactions</DialogTitle>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Select an Excel file (.xlsx) containing transaction data to import.
+            </p>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">File</label>
+              <div className="flex">
+                <Input 
+                  type="file" 
+                  accept=".xlsx, .xls"
+                  onChange={handleFileUpload}
+                  className="flex-1"
+                />
+              </div>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                The file should contain columns for Date, Type, Category, Amount, and Description.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsImportDialogOpen(false)}>Cancel</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
