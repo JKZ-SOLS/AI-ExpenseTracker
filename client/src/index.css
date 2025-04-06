@@ -23,7 +23,8 @@
 
 @layer components {
   .balance-card {
-    @apply bg-gradient-to-br from-[#126611] to-[#25991c] rounded-2xl p-6 text-white shadow-lg;
+    @apply rounded-2xl p-6 text-white shadow-lg relative overflow-hidden;
+    background: linear-gradient(145deg, #126611 0%, #0e4a0d 100%);
   }
   
   .section-title {
@@ -47,11 +48,11 @@
   }
 
   .icon-circle {
-    @apply w-10 h-10 rounded-full flex items-center justify-center bg-[#126611]/30 text-[#4dff34];
+    @apply w-10 h-10 rounded-full flex items-center justify-center bg-black text-[#4dff34];
   }
   
   .transaction-item {
-    @apply flex items-center justify-between p-4 border-b border-[#126611]/20;
+    @apply flex items-center justify-between p-4 border-b border-[#126611]/20 last:border-b-0 hover:bg-black/10 cursor-pointer transition-colors;
   }
   
   .expense-amount {
@@ -59,6 +60,14 @@
   }
   
   .income-amount {
-    @apply text-[#39cc28];
+    @apply text-[#4dff34];
+  }
+  
+  .pin-digit {
+    @apply w-3 h-3 rounded-full mx-1 bg-[#126611]/20;
+  }
+  
+  .pin-digit.filled {
+    @apply bg-[#4dff34];
   }
 }

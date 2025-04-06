@@ -3,6 +3,7 @@ import TransactionItem from '../components/TransactionItem';
 import { useExpense } from '../context/ExpenseContext';
 import { formatCurrency } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
+import { Plus, ArrowUpCircle, ArrowDownCircle, DollarSign, PieChart, Bell, ShoppingBag } from 'lucide-react';
 
 const HomePage = () => {
   const { settings } = useAuth();
@@ -36,8 +37,8 @@ const HomePage = () => {
       <div className="p-4 pt-12">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold">My Wallet</h1>
-          <button className="w-10 h-10 rounded-full flex items-center justify-center bg-white/10 dark:bg-neutral-700/20 text-lg">
-            <i className="ri-notification-3-line"></i>
+          <button className="w-10 h-10 rounded-full flex items-center justify-center bg-[#126611] text-white">
+            <Bell size={20} />
           </button>
         </div>
         
@@ -56,14 +57,14 @@ const HomePage = () => {
             <Link href="/add-transaction?type=income" className="cursor-pointer hover:bg-[#126611]/20 rounded-lg p-2 transition">
               <p className="text-xs text-white/70 mb-1">This Month Income</p>
               <div className="flex items-center">
-                <i className="ri-arrow-up-circle-fill text-[#4dff34] mr-1"></i>
+                <ArrowUpCircle size={18} className="text-[#4dff34] mr-1" />
                 <span className="text-lg font-semibold text-[#4dff34]">{formatCurrency(monthlyIncome, settings.currency)}</span>
               </div>
             </Link>
             <Link href="/add-transaction?type=expense" className="cursor-pointer hover:bg-[#126611]/20 rounded-lg p-2 transition">
               <p className="text-xs text-white/70 mb-1">This Month Expenses</p>
               <div className="flex items-center">
-                <i className="ri-arrow-down-circle-fill text-red-400 mr-1"></i>
+                <ArrowDownCircle size={18} className="text-red-400 mr-1" />
                 <span className="text-lg font-semibold text-red-400">{formatCurrency(monthlyExpenses, settings.currency)}</span>
               </div>
             </Link>
@@ -72,21 +73,21 @@ const HomePage = () => {
         
         {/* Quick Actions */}
         <div className="flex justify-between mb-6">
-          <Link href="/add-transaction?type=expense" className="flex flex-col items-center p-2 bg-[#126611]/20 rounded-lg w-[30%]">
-            <div className="icon-circle mb-1">
-              <i className="ri-add-line text-lg"></i>
+          <Link href="/add-transaction?type=expense" className="flex flex-col items-center p-2 bg-[#126611] rounded-lg w-[30%]">
+            <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center mb-1">
+              <Plus size={18} className="text-[#4dff34]" />
             </div>
             <span className="text-xs text-white/90">Add Expense</span>
           </Link>
-          <Link href="/add-transaction?type=income" className="flex flex-col items-center p-2 bg-[#126611]/20 rounded-lg w-[30%]">
-            <div className="icon-circle mb-1">
-              <i className="ri-money-dollar-circle-line text-lg"></i>
+          <Link href="/add-transaction?type=income" className="flex flex-col items-center p-2 bg-[#126611] rounded-lg w-[30%]">
+            <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center mb-1">
+              <DollarSign size={18} className="text-[#4dff34]" />
             </div>
             <span className="text-xs text-white/90">Add Income</span>
           </Link>
-          <Link href="/stats" className="flex flex-col items-center p-2 bg-[#126611]/20 rounded-lg w-[30%]">
-            <div className="icon-circle mb-1">
-              <i className="ri-pie-chart-line text-lg"></i>
+          <Link href="/stats" className="flex flex-col items-center p-2 bg-[#126611] rounded-lg w-[30%]">
+            <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center mb-1">
+              <PieChart size={18} className="text-[#4dff34]" />
             </div>
             <span className="text-xs text-white/90">View Stats</span>
           </Link>
@@ -136,8 +137,8 @@ const HomePage = () => {
                 return (
                   <div key={category.id} className="flex items-center justify-between mb-3 last:mb-0">
                     <div className="flex items-center">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#126611]/30 mr-3">
-                        <i className={category.icon + ' text-[#4dff34]'}></i>
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#126611] mr-3">
+                        <ShoppingBag size={16} className="text-[#4dff34]" />
                       </div>
                       <span className="text-sm text-white">{category.name}</span>
                     </div>
