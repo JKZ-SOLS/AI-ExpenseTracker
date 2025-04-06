@@ -125,16 +125,7 @@ const SettingsPage = () => {
               </select>
             </div>
             
-            {/* Theme Setting */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-9 h-9 rounded-full bg-white/20 dark:bg-neutral-700/20 flex items-center justify-center mr-3">
-                  <i className="ri-contrast-2-line"></i>
-                </div>
-                <span>Dark Theme</span>
-              </div>
-              <Switch checked={isDarkMode} onCheckedChange={handleThemeToggle} />
-            </div>
+{/* Dark theme switch removed - app will always use dark mode */}
           </div>
           
           <div className="p-4 border-b border-neutral-200/30 dark:border-neutral-700/30">

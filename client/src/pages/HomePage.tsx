@@ -43,26 +43,30 @@ const HomePage = () => {
         
         {/* Balance Card - SadaPay Style */}
         <div className="balance-card mb-6">
-          <h2 className="text-sm font-medium text-white/80 mb-1">Current Balance</h2>
-          <div className="flex items-end">
-            <span className="text-4xl font-bold">{formatCurrency(balance, settings.currency)}</span>
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-sm font-medium text-white/80 mb-1">Current Balance</h2>
+              <div className="flex items-end">
+                <span className="text-4xl font-bold">{formatCurrency(balance, settings.currency)}</span>
+              </div>
+            </div>
           </div>
           
           <div className="grid grid-cols-2 gap-4 mt-6 bg-black/20 -mx-6 -mb-6 p-4 rounded-b-2xl">
-            <div>
+            <Link href="/add-transaction?type=income" className="cursor-pointer hover:bg-[#126611]/20 rounded-lg p-2 transition">
               <p className="text-xs text-white/70 mb-1">This Month Income</p>
               <div className="flex items-center">
                 <i className="ri-arrow-up-circle-fill text-[#4dff34] mr-1"></i>
                 <span className="text-lg font-semibold text-[#4dff34]">{formatCurrency(monthlyIncome, settings.currency)}</span>
               </div>
-            </div>
-            <div>
+            </Link>
+            <Link href="/add-transaction?type=expense" className="cursor-pointer hover:bg-[#126611]/20 rounded-lg p-2 transition">
               <p className="text-xs text-white/70 mb-1">This Month Expenses</p>
               <div className="flex items-center">
                 <i className="ri-arrow-down-circle-fill text-red-400 mr-1"></i>
                 <span className="text-lg font-semibold text-red-400">{formatCurrency(monthlyExpenses, settings.currency)}</span>
               </div>
-            </div>
+            </Link>
           </div>
         </div>
         
@@ -92,8 +96,8 @@ const HomePage = () => {
         <div className="mb-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-semibold text-white">Recent Transactions</h2>
-            <Link href="/stats">
-              <a className="text-xs text-[#39cc28]">View All</a>
+            <Link href="/stats" className="text-xs text-[#39cc28]">
+              View All
             </Link>
           </div>
           
@@ -106,8 +110,8 @@ const HomePage = () => {
           ) : (
             <div className="rounded-lg p-6 text-center bg-[#126611]/10 border border-[#126611]/20">
               <p className="text-sm text-white/70">No transactions yet</p>
-              <Link href="/add-transaction">
-                <a className="text-[#39cc28] text-sm mt-2 block">Add your first transaction</a>
+              <Link href="/add-transaction" className="text-[#39cc28] text-sm mt-2 block">
+                Add your first transaction
               </Link>
             </div>
           )}
@@ -117,8 +121,8 @@ const HomePage = () => {
         <div className="mb-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-semibold text-white">Monthly Spending</h2>
-            <Link href="/stats">
-              <a className="text-xs text-[#39cc28]">See Details</a>
+            <Link href="/stats" className="text-xs text-[#39cc28]">
+              See Details
             </Link>
           </div>
           
