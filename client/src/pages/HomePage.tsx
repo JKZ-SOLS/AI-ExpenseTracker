@@ -41,30 +41,26 @@ const HomePage = () => {
           </button>
         </div>
         
-        {/* Balance Card */}
-        <div className="glass-card rounded-xl p-6 mb-6 relative overflow-hidden bg-primary bg-opacity-10 border border-primary/20">
-          <div className="absolute -right-6 -top-4 w-28 h-28 bg-primary rounded-full opacity-10"></div>
-          <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-secondary rounded-full opacity-5"></div>
-          
-          <h2 className="text-sm font-medium opacity-80 mb-1">Current Balance</h2>
+        {/* Balance Card - SadaPay Style */}
+        <div className="balance-card mb-6">
+          <h2 className="text-sm font-medium text-white/80 mb-1">Current Balance</h2>
           <div className="flex items-end">
-            <span className="text-3xl font-bold">{formatCurrency(balance, settings.currency)}</span>
-            <span className="text-sm ml-2 mb-1 opacity-60">{settings.currency}</span>
+            <span className="text-4xl font-bold">{formatCurrency(balance, settings.currency)}</span>
           </div>
           
-          <div className="grid grid-cols-2 gap-4 mt-6">
+          <div className="grid grid-cols-2 gap-4 mt-6 bg-black/20 -mx-6 -mb-6 p-4 rounded-b-2xl">
             <div>
-              <p className="text-xs opacity-70 mb-1">Income</p>
+              <p className="text-xs text-white/70 mb-1">This Month Income</p>
               <div className="flex items-center">
-                <i className="ri-arrow-up-circle-fill text-success mr-1"></i>
-                <span className="text-lg font-semibold text-success">{formatCurrency(monthlyIncome, settings.currency)}</span>
+                <i className="ri-arrow-up-circle-fill text-[#4dff34] mr-1"></i>
+                <span className="text-lg font-semibold text-[#4dff34]">{formatCurrency(monthlyIncome, settings.currency)}</span>
               </div>
             </div>
             <div>
-              <p className="text-xs opacity-70 mb-1">Expenses</p>
+              <p className="text-xs text-white/70 mb-1">This Month Expenses</p>
               <div className="flex items-center">
-                <i className="ri-arrow-down-circle-fill text-danger mr-1"></i>
-                <span className="text-lg font-semibold text-danger">{formatCurrency(monthlyExpenses, settings.currency)}</span>
+                <i className="ri-arrow-down-circle-fill text-red-400 mr-1"></i>
+                <span className="text-lg font-semibold text-red-400">{formatCurrency(monthlyExpenses, settings.currency)}</span>
               </div>
             </div>
           </div>
@@ -72,50 +68,46 @@ const HomePage = () => {
         
         {/* Quick Actions */}
         <div className="flex justify-between mb-6">
-          <Link href="/add-transaction?type=expense">
-            <a className="flex flex-col items-center p-2 bg-white/10 dark:bg-neutral-700/20 rounded-lg w-[30%]">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-primary/20 mb-1">
-                <i className="ri-add-line text-primary text-lg"></i>
-              </div>
-              <span className="text-xs">Add Expense</span>
-            </a>
+          <Link href="/add-transaction?type=expense" className="flex flex-col items-center p-2 bg-[#126611]/20 rounded-lg w-[30%]">
+            <div className="icon-circle mb-1">
+              <i className="ri-add-line text-lg"></i>
+            </div>
+            <span className="text-xs text-white/90">Add Expense</span>
           </Link>
-          <Link href="/add-transaction?type=income">
-            <a className="flex flex-col items-center p-2 bg-white/10 dark:bg-neutral-700/20 rounded-lg w-[30%]">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-success/20 mb-1">
-                <i className="ri-money-dollar-circle-line text-success text-lg"></i>
-              </div>
-              <span className="text-xs">Add Income</span>
-            </a>
+          <Link href="/add-transaction?type=income" className="flex flex-col items-center p-2 bg-[#126611]/20 rounded-lg w-[30%]">
+            <div className="icon-circle mb-1">
+              <i className="ri-money-dollar-circle-line text-lg"></i>
+            </div>
+            <span className="text-xs text-white/90">Add Income</span>
           </Link>
-          <Link href="/stats">
-            <a className="flex flex-col items-center p-2 bg-white/10 dark:bg-neutral-700/20 rounded-lg w-[30%]">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center bg-secondary/20 mb-1">
-                <i className="ri-pie-chart-line text-secondary text-lg"></i>
-              </div>
-              <span className="text-xs">View Stats</span>
-            </a>
+          <Link href="/stats" className="flex flex-col items-center p-2 bg-[#126611]/20 rounded-lg w-[30%]">
+            <div className="icon-circle mb-1">
+              <i className="ri-pie-chart-line text-lg"></i>
+            </div>
+            <span className="text-xs text-white/90">View Stats</span>
           </Link>
         </div>
         
         {/* Recent Transactions */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="font-semibold">Recent Transactions</h2>
+            <h2 className="font-semibold text-white">Recent Transactions</h2>
             <Link href="/stats">
-              <a className="text-xs text-primary">View All</a>
+              <a className="text-xs text-[#39cc28]">View All</a>
             </Link>
           </div>
           
           {recentTransactions.length > 0 ? (
-            recentTransactions.map(transaction => (
-              <TransactionItem key={transaction.id} transaction={transaction} />
-            ))
+            <div className="rounded-lg bg-[#126611]/10 border border-[#126611]/20">
+              {recentTransactions.map(transaction => (
+                <TransactionItem key={transaction.id} transaction={transaction} />
+              ))}
+            </div>
           ) : (
-            <div className="glass-card rounded-lg p-6 text-center">
-              <p className="text-sm opacity-70">No transactions yet</p>
+            <div className="rounded-lg p-6 text-center bg-[#126611]/10 border border-[#126611]/20">
+              <p className="text-sm text-white/70">No transactions yet</p>
               <Link href="/add-transaction">
-                <a className="text-primary text-sm mt-2 block">Add your first transaction</a>
+                <a className="text-[#39cc28] text-sm mt-2 block">Add your first transaction</a>
               </Link>
             </div>
           )}
@@ -124,13 +116,13 @@ const HomePage = () => {
         {/* Monthly Spending by Category */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="font-semibold">Monthly Spending</h2>
+            <h2 className="font-semibold text-white">Monthly Spending</h2>
             <Link href="/stats">
-              <a className="text-xs text-primary">See Details</a>
+              <a className="text-xs text-[#39cc28]">See Details</a>
             </Link>
           </div>
           
-          <div className="glass-card rounded-lg p-4">
+          <div className="rounded-lg p-4 bg-[#126611]/10 border border-[#126611]/20">
             {topCategories.length > 0 ? (
               topCategories.map(category => {
                 const percentage = monthlyExpenses > 0 
@@ -140,21 +132,21 @@ const HomePage = () => {
                 return (
                   <div key={category.id} className="flex items-center justify-between mb-3 last:mb-0">
                     <div className="flex items-center">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center bg-danger/10 mr-3">
-                        <i className={category.icon + ' text-danger'}></i>
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#126611]/30 mr-3">
+                        <i className={category.icon + ' text-[#4dff34]'}></i>
                       </div>
-                      <span className="text-sm">{category.name}</span>
+                      <span className="text-sm text-white">{category.name}</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-sm font-semibold">{formatCurrency(category.total, settings.currency)}</span>
-                      <div className="text-xs opacity-60">{percentage}%</div>
+                      <span className="text-sm font-semibold text-white">{formatCurrency(category.total, settings.currency)}</span>
+                      <div className="text-xs text-white/60">{percentage}%</div>
                     </div>
                   </div>
                 );
               })
             ) : (
               <div className="text-center py-3">
-                <p className="text-sm opacity-70">No expense data available</p>
+                <p className="text-sm text-white/70">No expense data available</p>
               </div>
             )}
           </div>

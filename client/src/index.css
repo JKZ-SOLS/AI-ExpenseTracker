@@ -2,20 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --green-100: #4dff34;
+  --green-200: #39cc28;
+  --green-300: #25991c;
+  --green-400: #126611;
+  --green-500: #000000;
+}
+
 @layer base {
   * {
     @apply border-border;
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased bg-black text-white;
     font-family: 'Inter', sans-serif;
   }
 }
 
 @layer components {
-  .glass-card {
-    @apply backdrop-blur-md bg-white/30 dark:bg-neutral-800/30 border border-white/20 dark:border-neutral-700/20;
+  .balance-card {
+    @apply bg-gradient-to-br from-[#126611] to-[#25991c] rounded-2xl p-6 text-white shadow-lg;
   }
   
   .section-title {
@@ -23,15 +31,15 @@
   }
   
   .nav-btn {
-    @apply flex flex-col items-center p-2 text-neutral-600 dark:text-neutral-400 transition-colors;
+    @apply flex flex-col items-center p-2 text-gray-400 transition-colors;
   }
   
   .nav-btn.active {
-    @apply text-primary;
+    @apply text-[#39cc28];
   }
   
   .keypad-button {
-    @apply w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl bg-white/10 hover:bg-white/20 transition-all;
+    @apply w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl bg-[#126611]/50 hover:bg-[#126611]/75 transition-all;
   }
 
   .keypad-button:active {
@@ -39,6 +47,18 @@
   }
 
   .icon-circle {
-    @apply w-10 h-10 rounded-full flex items-center justify-center;
+    @apply w-10 h-10 rounded-full flex items-center justify-center bg-[#126611]/30 text-[#4dff34];
+  }
+  
+  .transaction-item {
+    @apply flex items-center justify-between p-4 border-b border-[#126611]/20;
+  }
+  
+  .expense-amount {
+    @apply text-red-400;
+  }
+  
+  .income-amount {
+    @apply text-[#39cc28];
   }
 }

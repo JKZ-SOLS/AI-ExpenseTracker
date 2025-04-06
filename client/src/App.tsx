@@ -61,9 +61,7 @@ function App() {
   // Only render ExpenseProvider when authenticated
   return (
     <ExpenseProvider>
-      <div className={`min-h-screen bg-gradient-to-br ${isDarkMode 
-        ? 'from-neutral-900 to-neutral-800 text-white' 
-        : 'from-white/90 to-blue-50/85 text-neutral-800'}`}>
+      <div className="min-h-screen bg-black text-white">
         <Switch>
           <Route path="/" component={HomePage} />
           <Route path="/stats" component={StatsPage} />
