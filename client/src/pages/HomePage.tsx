@@ -71,28 +71,6 @@ const HomePage = () => {
           </div>
         </div>
         
-        {/* Quick Actions */}
-        <div className="flex justify-between mb-6">
-          <Link href="/add-transaction?type=expense" className="flex flex-col items-center p-2 bg-[#126611] rounded-lg w-[30%]">
-            <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center mb-1">
-              <Plus size={18} className="text-[#4dff34]" />
-            </div>
-            <span className="text-xs text-white/90">Add Expense</span>
-          </Link>
-          <Link href="/add-transaction?type=income" className="flex flex-col items-center p-2 bg-[#126611] rounded-lg w-[30%]">
-            <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center mb-1">
-              <DollarSign size={18} className="text-[#4dff34]" />
-            </div>
-            <span className="text-xs text-white/90">Add Income</span>
-          </Link>
-          <Link href="/stats" className="flex flex-col items-center p-2 bg-[#126611] rounded-lg w-[30%]">
-            <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center mb-1">
-              <PieChart size={18} className="text-[#4dff34]" />
-            </div>
-            <span className="text-xs text-white/90">View Stats</span>
-          </Link>
-        </div>
-        
         {/* Recent Transactions */}
         <div className="mb-6">
           <div className="flex justify-between items-center mb-4">
