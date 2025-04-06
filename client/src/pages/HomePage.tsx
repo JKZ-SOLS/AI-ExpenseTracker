@@ -42,31 +42,35 @@ const HomePage = () => {
           </button>
         </div>
         
-        {/* Balance Card - SadaPay Style */}
-        <div className="balance-card mb-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <h2 className="text-sm font-medium text-white/80 mb-1">Cash Balance</h2>
-              <div className="flex items-end">
-                <span className="text-4xl font-bold">{formatCurrency(balance, settings.currency)}</span>
+        {/* Balance and Mini Cards Container */}
+        <div className="grid grid-cols-5 gap-4 mb-6">
+          {/* Balance Card - Dark with Green Text */}
+          <div className="balance-card col-span-3">
+            <div className="flex justify-between items-start">
+              <div>
+                <h2 className="text-sm font-medium opacity-80 mb-1">Cash Balance</h2>
+                <div className="flex items-end">
+                  <span className="text-4xl font-bold">{formatCurrency(balance, settings.currency)}</span>
+                </div>
               </div>
-            </div>
-            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-              <DollarSign size={16} className="text-white" />
+              <div className="w-8 h-8 bg-[#00A226]/20 rounded-full flex items-center justify-center">
+                <DollarSign size={16} />
+              </div>
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-3 mt-6">
-            <Link href="/add-transaction?type=income" className="cursor-pointer bg-blue-500 rounded-xl p-3 transition">
-              <p className="text-xs text-white/80 mb-1">Monthly Income</p>
+          {/* Mini Cards - Green with Black Text */}
+          <div className="col-span-2 flex flex-col gap-3">
+            <Link href="/add-transaction?type=income" className="mini-card">
+              <p className="text-xs opacity-80 mb-1">Monthly Income</p>
               <div className="flex items-center">
-                <span className="text-base font-semibold text-white">{formatCurrency(monthlyIncome, settings.currency)}</span>
+                <span className="text-base font-semibold">{formatCurrency(monthlyIncome, settings.currency)}</span>
               </div>
             </Link>
-            <Link href="/add-transaction?type=expense" className="cursor-pointer bg-red-500 rounded-xl p-3 transition">
-              <p className="text-xs text-white/80 mb-1">Monthly Expenses</p>
+            <Link href="/add-transaction?type=expense" className="mini-card">
+              <p className="text-xs opacity-80 mb-1">Monthly Expenses</p>
               <div className="flex items-center">
-                <span className="text-base font-semibold text-white">{formatCurrency(monthlyExpenses, settings.currency)}</span>
+                <span className="text-base font-semibold">{formatCurrency(monthlyExpenses, settings.currency)}</span>
               </div>
             </Link>
           </div>
@@ -76,7 +80,7 @@ const HomePage = () => {
         <div className="mb-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-semibold text-white">Recent Transactions</h2>
-            <Link href="/stats" className="text-xs text-[#00D632]">
+            <Link href="/stats" className="text-xs text-[#00A226]">
               View All
             </Link>
           </div>
@@ -90,7 +94,7 @@ const HomePage = () => {
           ) : (
             <div className="rounded-lg p-6 text-center bg-[#00A226]/10 border border-[#00A226]/20">
               <p className="text-sm text-white/70">No transactions yet</p>
-              <Link href="/add-transaction" className="text-[#00D632] text-sm mt-2 block">
+              <Link href="/add-transaction" className="text-[#00A226] text-sm mt-2 block">
                 Add your first transaction
               </Link>
             </div>
@@ -101,7 +105,7 @@ const HomePage = () => {
         <div className="mb-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-semibold text-white">Monthly Spending</h2>
-            <Link href="/stats" className="text-xs text-[#00D632]">
+            <Link href="/stats" className="text-xs text-[#00A226]">
               See Details
             </Link>
           </div>
@@ -117,7 +121,7 @@ const HomePage = () => {
                   <div key={category.id} className="flex items-center justify-between mb-3 last:mb-0">
                     <div className="flex items-center">
                       <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#00A226] mr-3">
-                        <ShoppingBag size={16} className="text-[#00D632]" />
+                        <ShoppingBag size={16} className="text-black" />
                       </div>
                       <span className="text-sm text-white">{category.name}</span>
                     </div>
