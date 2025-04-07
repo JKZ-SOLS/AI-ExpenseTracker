@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation, useRoute } from 'wouter';
 import { useExpense } from '../context/ExpenseContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useVoiceRecognition } from '../hooks/useVoiceRecognition';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatCurrency } from '../lib/utils';
+import { Mic, MicOff, Loader2 } from 'lucide-react';
 
 const AddTransactionPage = () => {
   const [, navigate] = useLocation();
@@ -23,13 +25,120 @@ const AddTransactionPage = () => {
   const [description, setDescription] = useState('');
   const [categoryId, setCategoryId] = useState<number | ''>('');
   const [date, setDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [isProcessingVoice, setIsProcessingVoice] = useState(false);
   
   const filteredCategories = categories.filter(c => c.type === type);
+  
+  // Voice recognition setup
+  const { 
+    transcript, 
+    isListening, 
+    startListening, 
+    stopListening, 
+    resetTranscript,
+    isSupported,
+    error: voiceError
+  } = useVoiceRecognition({
+    language: 'en-US',
+    continuous: false,
+    onResult: (text) => {
+      console.log('Voice recognized:', text);
+    },
+    onError: (error) => {
+      console.error('Voice recognition error:', error);
+      toast({
+        variant: "destructive",
+        title: "Voice Recognition Error",
+        description: error,
+      });
+    }
+  });
   
   useEffect(() => {
     // Reset category when type changes
     setCategoryId('');
   }, [type]);
+  
+  // Process voice input when transcript changes
+  useEffect(() => {
+    if (!transcript || isProcessingVoice) return;
+    
+    setIsProcessingVoice(true);
+    
+    try {
+      // Parse the transcript to extract expense details
+      // Example format: "spent 500 on groceries yesterday" or "earned 1000 from salary today"
+      const lowerTranscript = transcript.toLowerCase();
+      
+      // Try to determine transaction type
+      if (lowerTranscript.includes('spent') || lowerTranscript.includes('paid') || lowerTranscript.includes('bought')) {
+        setType('expense');
+      } else if (lowerTranscript.includes('earned') || lowerTranscript.includes('received') || lowerTranscript.includes('got')) {
+        setType('income');
+      }
+      
+      // Try to extract amount
+      const amountRegex = /\d+(\.\d+)?/;
+      const amountMatch = lowerTranscript.match(amountRegex);
+      if (amountMatch && amountMatch[0]) {
+        setAmount(amountMatch[0]);
+      }
+      
+      // Set description based on the transcript
+      // Remove amount and type indicators for cleaner description
+      let processedDescription = transcript
+        .replace(/spent|paid|bought|earned|received|got/gi, '')
+        .replace(/\d+(\.\d+)?/g, '')
+        .replace(/on|for|from/gi, '')
+        .replace(/yesterday|today|tomorrow/gi, '')
+        .trim();
+      
+      // If description is still too generic, use the full transcript
+      if (processedDescription.length < 5) {
+        processedDescription = transcript;
+      }
+      
+      setDescription(processedDescription);
+      
+      // Try to match category based on keywords
+      const matchedCategory = filteredCategories.find(category => 
+        lowerTranscript.includes(category.name.toLowerCase())
+      );
+      
+      if (matchedCategory) {
+        setCategoryId(matchedCategory.id);
+      }
+      
+      // Try to set date if mentioned
+      if (lowerTranscript.includes('yesterday')) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        setDate(yesterday.toISOString().split('T')[0]);
+      } else if (lowerTranscript.includes('tomorrow')) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        setDate(tomorrow.toISOString().split('T')[0]);
+      } else {
+        // Default to today
+        setDate(new Date().toISOString().split('T')[0]);
+      }
+      
+      toast({
+        title: "Voice input processed",
+        description: "Please review and adjust the details if needed.",
+      });
+    } catch (error) {
+      console.error('Error processing voice input:', error);
+      toast({
+        variant: "destructive",
+        title: "Failed to process voice input",
+        description: "Please try again or enter details manually.",
+      });
+    } finally {
+      setIsProcessingVoice(false);
+      resetTranscript();
+    }
+  }, [transcript, filteredCategories, resetTranscript]);
   
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Only allow numbers and a single decimal point
@@ -84,7 +193,7 @@ const AddTransactionPage = () => {
       amount: parsedAmount,
       description,
       categoryId: categoryId as number,
-      date: dateObj.toISOString(),
+      date: dateObj,
     });
     
     toast({
@@ -111,6 +220,50 @@ const AddTransactionPage = () => {
           </h1>
         </div>
         
+        {/* Voice Input Control */}
+        {isSupported && (
+          <div className="mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-medium mb-1">Voice Input</h3>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  {isListening 
+                    ? "Say something like \"spent 500 on groceries yesterday\"..." 
+                    : "Tap the microphone and speak to add a transaction"}
+                </p>
+              </div>
+              <Button
+                type="button"
+                size="icon"
+                variant={isListening ? "destructive" : "outline"}
+                onClick={isListening ? stopListening : startListening}
+                disabled={isProcessingVoice}
+                className="h-12 w-12 rounded-full"
+              >
+                {isListening ? (
+                  <MicOff className="h-6 w-6" />
+                ) : isProcessingVoice ? (
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                ) : (
+                  <Mic className="h-6 w-6" />
+                )}
+              </Button>
+            </div>
+            
+            {transcript && (
+              <div className="mt-2 p-3 bg-primary/10 rounded-md">
+                <p className="text-sm">{transcript}</p>
+              </div>
+            )}
+            
+            {voiceError && (
+              <div className="mt-2 p-3 bg-destructive/10 rounded-md">
+                <p className="text-sm text-destructive">{voiceError}</p>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="glass-card rounded-xl p-5 mb-6">
           <form onSubmit={handleSubmit}>
             {/* Transaction Type */}
