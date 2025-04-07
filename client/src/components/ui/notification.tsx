@@ -14,7 +14,7 @@ export interface NotificationProps {
 export const Notification = ({
   title,
   message,
-  duration = 3000,
+  duration = 5000,
   type = 'info',
   onClose,
   isVisible
@@ -83,9 +83,9 @@ export const Notification = ({
   return (
     <div 
       className={cn(
-        'fixed bottom-4 left-1/2 transform -translate-x-1/2 w-[90%] max-w-md z-50',
+        'fixed top-4 left-1/2 transform -translate-x-1/2 w-[90%] max-w-md z-50',
         'transition-all duration-300 ease-in-out',
-        isClosing ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'
+        isClosing ? 'opacity-0 -translate-y-4' : 'opacity-100 translate-y-0'
       )}
     >
       <div 

@@ -84,6 +84,27 @@ const tipBank: Tip[] = [
     message: 'Remember you can export your transactions to Excel for deeper analysis or sharing with financial advisors.',
     type: 'feature',
     notificationType: 'info'
+  },
+  {
+    id: 'tip-11',
+    title: 'New AI Feature: Expense Forecasting',
+    message: 'Our AI can now predict your monthly expenses based on your spending patterns! Check the Stats page for future projections.',
+    type: 'feature',
+    notificationType: 'success'
+  },
+  {
+    id: 'tip-12',
+    title: 'Smart Budgeting Suggestion',
+    message: 'Based on your monthly income and regular expenses, our AI suggests a monthly savings target of 15-20% of your income.',
+    type: 'insight',
+    notificationType: 'info'
+  },
+  {
+    id: 'tip-13',
+    title: 'AI Spending Alert',
+    message: 'Our AI has detected unusual spending activity in your entertainment category this month compared to your typical pattern.',
+    type: 'warning',
+    notificationType: 'warning'
   }
 ];
 
@@ -197,7 +218,7 @@ export const TipsProvider = ({ children }: { children: ReactNode }) => {
           title={currentTip.title}
           message={currentTip.message}
           type={currentTip.notificationType || 'info'}
-          duration={3000} // 3 seconds, as requested
+          duration={5000} // 5 seconds, as requested
           isVisible={isVisible}
           onClose={dismissTip}
         />
