@@ -80,7 +80,7 @@ const HomePage = () => {
         <div className="mb-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-semibold text-white">Recent Transactions</h2>
-            <Link href="/stats" className="text-xs text-[#00A226]">
+            <Link href="/transactions-history" className="text-xs text-[#00A226]">
               View All
             </Link>
           </div>

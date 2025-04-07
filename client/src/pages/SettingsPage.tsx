@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../hooks/useTheme';
 import { useExpense } from '../context/ExpenseContext';
@@ -7,9 +7,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { FileUp, FileDown } from 'lucide-react';
+import { FileUp, FileDown, Bell, Clock, Calendar } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { type Reminder } from '@shared/schema';
 
 const SettingsPage = () => {
   const { settings, updateSettings, logout, changePin } = useAuth();
@@ -25,7 +27,68 @@ const SettingsPage = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [isReminderDialogOpen, setIsReminderDialogOpen] = useState(false);
+  const [reminderTitle, setReminderTitle] = useState('');
+  const [reminderMessage, setReminderMessage] = useState('');
+  const [reminderTime, setReminderTime] = useState('09:00');
+  const [isReminderActive, setIsReminderActive] = useState(true);
   const fileInputRef = useState<HTMLInputElement | null>(null);
+  
+  // Query client for data mutations
+  const queryClient = useQueryClient();
+  
+  // Fetch existing reminders
+  const { data: reminders = [] } = useQuery<Reminder[]>({
+    queryKey: ['/api/reminders'],
+    staleTime: 60000
+  });
+  
+  // Daily expense reminder
+  const dailyReminder = reminders.find(reminder => 
+    reminder.title.includes('Daily Expense')
+  );
+  
+  // Create reminder mutation
+  const createReminderMutation = useMutation({
+    mutationFn: async (reminder: { title: string, message: string, time: string, isActive: number }) => {
+      const response = await fetch('/api/reminders', {
+        method: 'POST',
+        body: JSON.stringify(reminder),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to create reminder');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/reminders'] });
+      setIsReminderDialogOpen(false);
+      toast({
+        title: "Reminder created",
+        description: "Your reminder has been set successfully.",
+      });
+    }
+  });
+  
+  // Update reminder mutation
+  const updateReminderMutation = useMutation({
+    mutationFn: async ({ id, ...data }: { id: number, title?: string, message?: string, time?: string, isActive?: number }) => {
+      const response = await fetch(`/api/reminders/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to update reminder');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/reminders'] });
+      setIsReminderDialogOpen(false);
+      toast({
+        title: "Reminder updated",
+        description: "Your reminder has been updated successfully.",
+      });
+    }
+  });
   
   const handleCurrencyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     updateSettings({ ...settings, currency: e.target.value });
@@ -343,6 +406,68 @@ const SettingsPage = () => {
             </div>
           </div>
           
+          <div className="p-4 border-b border-neutral-200/30 dark:border-neutral-700/30">
+            <h2 className="font-semibold mb-4">Reminders</h2>
+            
+            {/* Daily Expense Reminder Setting */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <div className="w-9 h-9 rounded-full bg-white/20 dark:bg-neutral-700/20 flex items-center justify-center mr-3">
+                  <Bell className="w-5 h-5" />
+                </div>
+                <span>Daily Expense Reminder</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                {dailyReminder ? (
+                  <>
+                    <span className="text-sm opacity-70">{dailyReminder.time}</span>
+                    <Switch
+                      checked={!!dailyReminder.isActive}
+                      onCheckedChange={(checked) => {
+                        if (dailyReminder) {
+                          updateReminderMutation.mutate({
+                            id: dailyReminder.id,
+                            isActive: checked ? 1 : 0
+                          });
+                        }
+                      }}
+                    />
+                  </>
+                ) : (
+                  <button 
+                    className="text-primary"
+                    onClick={() => {
+                      setReminderTitle('Daily Expense Reminder');
+                      setReminderMessage('Don\'t forget to log your expenses today!');
+                      setReminderTime('20:00');
+                      setIsReminderActive(true);
+                      setIsReminderDialogOpen(true);
+                    }}
+                  >
+                    Set up
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            {dailyReminder && (
+              <button 
+                className="text-sm text-primary"
+                onClick={() => {
+                  if (dailyReminder) {
+                    setReminderTitle(dailyReminder.title);
+                    setReminderMessage(dailyReminder.message);
+                    setReminderTime(dailyReminder.time);
+                    setIsReminderActive(!!dailyReminder.isActive);
+                    setIsReminderDialogOpen(true);
+                  }
+                }}
+              >
+                Edit reminder
+              </button>
+            )}
+          </div>
+          
           <div className="p-4">
             <h2 className="font-semibold mb-4">About</h2>
             
@@ -512,6 +637,80 @@ const SettingsPage = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsImportDialogOpen(false)}>Cancel</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Reminder Dialog */}
+      <Dialog open={isReminderDialogOpen} onOpenChange={setIsReminderDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{dailyReminder ? 'Edit Reminder' : 'Set Daily Reminder'}</DialogTitle>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Configure when you want to be reminded to log your expenses.
+            </p>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Title</label>
+              <Input 
+                value={reminderTitle}
+                onChange={(e) => setReminderTitle(e.target.value)}
+                placeholder="Reminder title"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Message</label>
+              <Input 
+                value={reminderMessage}
+                onChange={(e) => setReminderMessage(e.target.value)}
+                placeholder="Reminder message"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Time</label>
+              <Input 
+                type="time"
+                value={reminderTime}
+                onChange={(e) => setReminderTime(e.target.value)}
+              />
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium">Enable reminder</label>
+              <Switch
+                checked={isReminderActive}
+                onCheckedChange={setIsReminderActive}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsReminderDialogOpen(false)}>Cancel</Button>
+            <Button 
+              className="bg-[#00A226] hover:bg-[#00A226]/80"
+              onClick={() => {
+                if (dailyReminder) {
+                  updateReminderMutation.mutate({
+                    id: dailyReminder.id,
+                    title: reminderTitle,
+                    message: reminderMessage,
+                    time: reminderTime,
+                    isActive: isReminderActive ? 1 : 0
+                  });
+                } else {
+                  createReminderMutation.mutate({
+                    title: reminderTitle,
+                    message: reminderMessage,
+                    time: reminderTime,
+                    isActive: isReminderActive ? 1 : 0
+                  });
+                }
+              }}
+            >
+              {dailyReminder ? 'Update' : 'Save'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

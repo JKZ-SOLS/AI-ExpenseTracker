@@ -1,4 +1,4 @@
-import { Category, Transaction, Settings, InsertCategory, InsertTransaction, InsertSettings } from '@shared/schema';
+import { Category, Transaction, Settings, Reminder, InsertCategory, InsertTransaction, InsertSettings, InsertReminder } from '@shared/schema';
 
 // Storage interface
 export interface IStorage {
@@ -19,21 +19,32 @@ export interface IStorage {
   // Settings
   getSettings(id: number): Promise<Settings | undefined>;
   updateSettings(id: number, settings: Partial<Settings>): Promise<Settings>;
+  
+  // Reminders
+  getReminders(): Promise<Reminder[]>;
+  getReminder(id: number): Promise<Reminder | undefined>;
+  createReminder(reminder: InsertReminder): Promise<Reminder>;
+  updateReminder(id: number, reminder: Partial<Reminder>): Promise<Reminder>;
+  deleteReminder(id: number): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
   private categories: Map<number, Category>;
   private transactions: Map<number, Transaction>;
   private settingsMap: Map<number, Settings>;
+  private remindersMap: Map<number, Reminder>;
   private categoryId: number;
   private transactionId: number;
+  private reminderId: number;
   
   constructor() {
     this.categories = new Map();
     this.transactions = new Map();
     this.settingsMap = new Map();
+    this.remindersMap = new Map();
     this.categoryId = 1;
     this.transactionId = 1;
+    this.reminderId = 1;
     
     // Initialize with default categories
     const defaultCategories: InsertCategory[] = [
@@ -54,7 +65,19 @@ export class MemStorage implements IStorage {
       currency: 'PKR',
       darkMode: 0,
       fingerprintEnabled: 1,
-      pin: '1234'
+      pin: '1234',
+      reminderEnabled: 1,
+      reminderTime: '20:00'
+    });
+    
+    // Initialize with default reminder for daily expense tracking
+    this.remindersMap.set(1, {
+      id: 1,
+      title: 'Daily Expense Reminder',
+      message: 'Don\'t forget to log your expenses for today!',
+      time: '20:00',
+      isActive: 1,
+      lastTriggered: new Date()
     });
   }
   
@@ -69,7 +92,13 @@ export class MemStorage implements IStorage {
   
   async createCategory(category: InsertCategory): Promise<Category> {
     const id = this.categoryId++;
-    const newCategory: Category = { ...category, id };
+    const newCategory: Category = { 
+      ...category, 
+      id,
+      description: category.description ?? null,
+      icon: category.icon || 'default',
+      color: category.color ?? null
+    };
     this.categories.set(id, newCategory);
     return newCategory;
   }
@@ -104,7 +133,11 @@ export class MemStorage implements IStorage {
   
   async createTransaction(transaction: InsertTransaction): Promise<Transaction> {
     const id = this.transactionId++;
-    const newTransaction: Transaction = { ...transaction, id };
+    const newTransaction: Transaction = { 
+      ...transaction, 
+      id,
+      date: transaction.date || new Date()
+    };
     this.transactions.set(id, newTransaction);
     return newTransaction;
   }
@@ -142,6 +175,46 @@ export class MemStorage implements IStorage {
     const updatedSettings: Settings = { ...settings, ...settingsUpdate };
     this.settingsMap.set(id, updatedSettings);
     return updatedSettings;
+  }
+  
+  // Reminders
+  async getReminders(): Promise<Reminder[]> {
+    return Array.from(this.remindersMap.values());
+  }
+  
+  async getReminder(id: number): Promise<Reminder | undefined> {
+    return this.remindersMap.get(id);
+  }
+  
+  async createReminder(reminder: InsertReminder): Promise<Reminder> {
+    const id = this.reminderId++;
+    const newReminder: Reminder = { 
+      ...reminder, 
+      id, 
+      lastTriggered: null,
+      isActive: reminder.isActive ?? 1 
+    };
+    this.remindersMap.set(id, newReminder);
+    return newReminder;
+  }
+  
+  async updateReminder(id: number, reminderUpdate: Partial<Reminder>): Promise<Reminder> {
+    const reminder = this.remindersMap.get(id);
+    if (!reminder) {
+      throw new Error(`Reminder with id ${id} not found`);
+    }
+    
+    const updatedReminder: Reminder = { ...reminder, ...reminderUpdate };
+    this.remindersMap.set(id, updatedReminder);
+    return updatedReminder;
+  }
+  
+  async deleteReminder(id: number): Promise<void> {
+    if (!this.remindersMap.has(id)) {
+      throw new Error(`Reminder with id ${id} not found`);
+    }
+    
+    this.remindersMap.delete(id);
   }
 }
 

@@ -43,6 +43,8 @@ export const settings = pgTable("settings", {
   darkMode: integer("dark_mode").notNull().default(0),
   fingerprintEnabled: integer("fingerprint_enabled").notNull().default(1),
   pin: text("pin").notNull().default("1234"),
+  reminderEnabled: integer("reminder_enabled").notNull().default(1),
+  reminderTime: text("reminder_time").notNull().default("20:00"),
 });
 
 export const insertSettingsSchema = createInsertSchema(settings).omit({
@@ -51,3 +53,20 @@ export const insertSettingsSchema = createInsertSchema(settings).omit({
 
 export type InsertSettings = z.infer<typeof insertSettingsSchema>;
 export type Settings = typeof settings.$inferSelect;
+
+// Reminder Schema
+export const reminders = pgTable("reminders", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  time: text("time").notNull(),
+  isActive: integer("is_active").notNull().default(1),
+  lastTriggered: timestamp("last_triggered"),
+});
+
+export const insertReminderSchema = createInsertSchema(reminders).omit({
+  id: true,
+});
+
+export type InsertReminder = z.infer<typeof insertReminderSchema>;
+export type Reminder = typeof reminders.$inferSelect;

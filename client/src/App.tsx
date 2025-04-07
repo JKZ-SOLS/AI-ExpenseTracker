@@ -9,8 +9,10 @@ import LockScreen from "@/components/LockScreen";
 import Navigation from "@/components/Navigation";
 import { useAuth } from "./context/AuthContext";
 import AddTransactionPage from "./pages/AddTransactionPage";
+import TransactionsHistoryPage from "./pages/TransactionsHistoryPage";
 import { useTheme } from "./hooks/useTheme";
 import { ExpenseProvider } from "./context/ExpenseContext";
+import { NotificationProvider } from "./components/ui/notification";
 
 function App() {
   // Temporary solution to bypass auth context issue
@@ -60,20 +62,23 @@ function App() {
 
   // Only render ExpenseProvider when authenticated
   return (
-    <ExpenseProvider>
-      <div className="min-h-screen bg-black text-white">
-        <Switch>
-          <Route path="/" component={HomePage} />
-          <Route path="/stats" component={StatsPage} />
-          <Route path="/categories" component={CategoriesPage} />
-          <Route path="/settings" component={SettingsPage} />
-          <Route path="/add-transaction" component={AddTransactionPage} />
-        </Switch>
-        
-        <Navigation activeRoute={activeRoute} setActiveRoute={setActiveRoute} />
-        <Toaster />
-      </div>
-    </ExpenseProvider>
+    <NotificationProvider>
+      <ExpenseProvider>
+        <div className="min-h-screen bg-black text-white">
+          <Switch>
+            <Route path="/" component={HomePage} />
+            <Route path="/stats" component={StatsPage} />
+            <Route path="/categories" component={CategoriesPage} />
+            <Route path="/settings" component={SettingsPage} />
+            <Route path="/add-transaction" component={AddTransactionPage} />
+            <Route path="/transactions-history" component={TransactionsHistoryPage} />
+          </Switch>
+          
+          <Navigation activeRoute={activeRoute} setActiveRoute={setActiveRoute} />
+          <Toaster />
+        </div>
+      </ExpenseProvider>
+    </NotificationProvider>
   );
 }
 
