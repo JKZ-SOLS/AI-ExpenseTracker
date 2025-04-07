@@ -19,7 +19,7 @@ interface AuthContextType {
 
 const defaultSettings: Settings = {
   currency: 'PKR',
-  darkMode: false,
+  darkMode: true, // Dark mode is enabled by default
   fingerprintEnabled: true,
   pin: '1234' // Default PIN
 };

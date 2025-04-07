@@ -8,11 +8,20 @@
   --green-300: #00A226;
   --green-400: #007F1D;
   --green-500: #006618;
+  
+  /* Transition variables */
+  --transition-speed: 0.3s;
+  --transition-ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @layer base {
   * {
     @apply border-border;
+    transition: background-color var(--transition-speed) var(--transition-ease),
+                color var(--transition-speed) var(--transition-ease),
+                border-color var(--transition-speed) var(--transition-ease),
+                box-shadow var(--transition-speed) var(--transition-ease),
+                transform var(--transition-speed) var(--transition-ease);
   }
 
   body {
@@ -26,6 +35,21 @@
     @apply rounded-2xl p-6 shadow-lg relative overflow-hidden;
     background: #121212;
     color: #00A226;
+  }
+  
+  .balance-amount {
+    @apply inline-block text-ellipsis overflow-hidden;
+    max-width: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.5px;
+  }
+  
+  @media (max-width: 360px) {
+    .balance-amount {
+      font-size: 2rem; /* Smaller font size on very small screens */
+    }
   }
   
   .section-title {

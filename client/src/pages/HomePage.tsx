@@ -81,13 +81,13 @@ const HomePage = () => {
           {/* Balance Card - Dark with Green Text */}
           <div className="balance-card col-span-3">
             <div className="flex justify-between items-start">
-              <div>
+              <div className="w-full">
                 <h2 className="text-sm font-medium opacity-80 mb-1">Cash Balance</h2>
-                <div className="flex items-end">
-                  <span className="text-4xl font-bold">{formatCurrency(balance, settings.currency)}</span>
+                <div className="w-full overflow-hidden">
+                  <span className="text-4xl font-bold balance-amount">{formatCurrency(balance, settings.currency)}</span>
                 </div>
               </div>
-              <div className="w-8 h-8 bg-[#00A226]/20 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-[#00A226]/20 rounded-full flex items-center justify-center flex-shrink-0 ml-2">
                 <DollarSign size={16} />
               </div>
             </div>
