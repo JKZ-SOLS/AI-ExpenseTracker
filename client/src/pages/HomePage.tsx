@@ -97,15 +97,23 @@ const HomePage = () => {
           <div className="col-span-2 flex flex-col gap-3">
             <Link href="/add-transaction?type=income" className="mini-card">
               <p className="text-xs opacity-80 mb-1">Monthly Income</p>
-              <div className="flex items-center">
+              <div className="flex items-center justify-between">
                 <span className="text-base font-semibold">{formatCurrency(monthlyIncome, settings.currency)}</span>
+                <div className="bg-black/20 rounded-full p-1">
+                  <ArrowUpCircle size={16} className="text-black" />
+                </div>
               </div>
+              <div className="text-xs mt-1 opacity-70">Tap to add income</div>
             </Link>
             <Link href="/add-transaction?type=expense" className="mini-card">
               <p className="text-xs opacity-80 mb-1">Monthly Expenses</p>
-              <div className="flex items-center">
+              <div className="flex items-center justify-between">
                 <span className="text-base font-semibold">{formatCurrency(monthlyExpenses, settings.currency)}</span>
+                <div className="bg-black/20 rounded-full p-1">
+                  <ArrowDownCircle size={16} className="text-black" />
+                </div>
               </div>
+              <div className="text-xs mt-1 opacity-70">Tap to add expense</div>
             </Link>
           </div>
         </div>

@@ -4,7 +4,11 @@ import { useMemo, useState } from 'react';
 import { useExpense } from '../context/ExpenseContext';
 import { formatCurrency } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
-import { Pencil, Trash2, DollarSign, ShoppingBag } from 'lucide-react';
+import { 
+  Pencil, Trash2, DollarSign, ShoppingBag, 
+  Coffee, Utensils, Home, Car, Stethoscope, Smartphone,
+  CreditCard, Gift, Briefcase, Users, Plane, Gamepad2
+} from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -25,6 +29,49 @@ const TransactionItem = ({ transaction }: TransactionItemProps) => {
   }, [categories, transaction.categoryId]);
   
   const amountPrefix = transaction.type === 'expense' ? '- ' : '+ ';
+  
+  // Function to get the icon based on category name
+  const getCategoryIcon = () => {
+    if (!category) {
+      return transaction.type === 'expense' ? <ShoppingBag size={18} /> : <DollarSign size={18} />;
+    }
+    
+    const categoryName = category.name.toLowerCase();
+    
+    if (transaction.type === 'income') {
+      return <DollarSign size={18} />;
+    }
+    
+    // Return different icons based on category name
+    if (categoryName.includes('food') || categoryName.includes('restaurant') || categoryName.includes('dining')) {
+      return <Utensils size={18} />;
+    } else if (categoryName.includes('coffee') || categoryName.includes('cafe')) {
+      return <Coffee size={18} />;
+    } else if (categoryName.includes('home') || categoryName.includes('rent') || categoryName.includes('house')) {
+      return <Home size={18} />;
+    } else if (categoryName.includes('car') || categoryName.includes('transport') || categoryName.includes('gas')) {
+      return <Car size={18} />;
+    } else if (categoryName.includes('health') || categoryName.includes('medical') || categoryName.includes('doctor')) {
+      return <Stethoscope size={18} />;
+    } else if (categoryName.includes('phone') || categoryName.includes('mobile') || categoryName.includes('tech')) {
+      return <Smartphone size={18} />;
+    } else if (categoryName.includes('entertainment') || categoryName.includes('game')) {
+      return <Gamepad2 size={18} />;
+    } else if (categoryName.includes('gift') || categoryName.includes('present')) {
+      return <Gift size={18} />;
+    } else if (categoryName.includes('travel') || categoryName.includes('vacation')) {
+      return <Plane size={18} />;
+    } else if (categoryName.includes('credit') || categoryName.includes('bill') || categoryName.includes('payment')) {
+      return <CreditCard size={18} />;
+    } else if (categoryName.includes('work') || categoryName.includes('business')) {
+      return <Briefcase size={18} />;
+    } else if (categoryName.includes('family') || categoryName.includes('friend') || categoryName.includes('social')) {
+      return <Users size={18} />;
+    }
+    
+    // Default to shopping bag if no match
+    return <ShoppingBag size={18} />;
+  };
   
   const handleEditClick = () => {
     // This would navigate to the edit transaction page with the transaction ID
@@ -60,10 +107,7 @@ const TransactionItem = ({ transaction }: TransactionItemProps) => {
       >
         <div className="flex items-center">
           <div className={`w-10 h-10 rounded-full flex items-center justify-center bg-[#126611] mr-3 ${transaction.type === 'expense' ? 'text-red-400' : 'text-[#4dff34]'}`}>
-            {transaction.type === 'expense' ? 
-              <ShoppingBag size={18} /> : 
-              <DollarSign size={18} />
-            }
+            {getCategoryIcon()}
           </div>
           <div>
             <h3 className="font-medium text-sm text-white">{transaction.description}</h3>

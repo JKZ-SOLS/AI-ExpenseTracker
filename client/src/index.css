@@ -73,7 +73,33 @@
   }
   
   .mini-card {
-    @apply rounded-xl p-3 transition text-black;
+    @apply rounded-xl p-3 transition text-black relative overflow-hidden cursor-pointer shadow-md;
     background: #00A226;
+  }
+  
+  .mini-card:hover {
+    @apply shadow-lg transform -translate-y-0.5;
+    background: #00B129;
+  }
+  
+  .mini-card:active {
+    @apply transform scale-95 translate-y-0;
+    background: #009A24;
+  }
+  
+  .mini-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .mini-card:hover::after {
+    opacity: 1;
   }
 }
