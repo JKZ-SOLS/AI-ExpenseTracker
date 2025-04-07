@@ -6,10 +6,26 @@ import { useAuth } from '../context/AuthContext';
 import { Plus, ArrowUpCircle, ArrowDownCircle, DollarSign, PieChart, Bell, ShoppingBag } from 'lucide-react';
 import { useNotification } from '../components/ui/notification';
 
+
+
 const HomePage = () => {
   const { settings } = useAuth();
   const { transactions, categories, balance, monthlyIncome, monthlyExpenses } = useExpense();
   const { showNotification } = useNotification();
+  
+  // Helper function to determine the size class based on the balance amount length
+  const getBalanceSizeClass = (balance: number, currency: string): string => {
+    const formattedBalance = formatCurrency(balance, currency);
+    const length = formattedBalance.length;
+    
+    if (length > 12) {
+      return 'text-sm'; // Smallest font for very large numbers
+    } else if (length > 8) {
+      return 'text-md'; // Medium font for moderately large numbers
+    } else {
+      return 'text-lg'; // Largest font for small numbers
+    }
+  };
   
   // Get latest 3 transactions
   const recentTransactions = transactions.slice(0, 3);
@@ -84,7 +100,9 @@ const HomePage = () => {
               <div className="w-full">
                 <h2 className="text-sm font-medium opacity-80 mb-1">Cash Balance</h2>
                 <div className="w-full overflow-hidden">
-                  <span className="text-4xl font-bold balance-amount">{formatCurrency(balance, settings.currency)}</span>
+                  <span className={`font-bold balance-amount ${getBalanceSizeClass(balance, settings.currency)}`}>
+                    {formatCurrency(balance, settings.currency)}
+                  </span>
                 </div>
               </div>
               <div className="w-8 h-8 bg-[#00A226]/20 rounded-full flex items-center justify-center flex-shrink-0 ml-2">

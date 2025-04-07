@@ -44,11 +44,37 @@
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.5px;
+    font-size: 2.25rem; /* Default size */
+  }
+  
+  /* Different font sizes based on content length classes that we'll add dynamically */
+  .balance-amount.text-lg {
+    font-size: 2.25rem;
+  }
+  
+  .balance-amount.text-md {
+    font-size: 1.875rem;
+  }
+  
+  .balance-amount.text-sm {
+    font-size: 1.5rem;
   }
   
   @media (max-width: 360px) {
     .balance-amount {
-      font-size: 2rem; /* Smaller font size on very small screens */
+      font-size: 1.75rem; /* Base size on smaller screens */
+    }
+    
+    .balance-amount.text-lg {
+      font-size: 1.75rem;
+    }
+    
+    .balance-amount.text-md {
+      font-size: 1.5rem;
+    }
+    
+    .balance-amount.text-sm {
+      font-size: 1.25rem;
     }
   }
   
