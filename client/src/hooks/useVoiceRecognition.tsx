@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 // Import the type definitions
 import '../types/speech-recognition.d.ts';
 
+// Make TypeScript happy with the global SpeechRecognition variable
+declare const SpeechRecognition: any;
+
 interface VoiceRecognitionState {
   isListening: boolean;
   transcript: string;
@@ -27,7 +30,7 @@ export const useVoiceRecognition = (options: VoiceRecognitionOptions = {}) => {
     error: null,
   });
 
-  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
+  const [recognition, setRecognition] = useState<any>(null);
 
   useEffect(() => {
     if (!isVoiceRecognitionSupported()) {

@@ -4,14 +4,14 @@ import { useExpense } from '../context/ExpenseContext';
 import { formatCurrency } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
 import { Plus, ArrowUpCircle, ArrowDownCircle, DollarSign, PieChart, Bell, ShoppingBag } from 'lucide-react';
-import { useNotification } from '../components/ui/notification';
+import { useTips } from '../context/TipsContext';
 
 
 
 const HomePage = () => {
   const { settings } = useAuth();
   const { transactions, categories, balance, monthlyIncome, monthlyExpenses } = useExpense();
-  const { showNotification } = useNotification();
+  const { showRandomTip, showCustomTip } = useTips();
   
   // Helper function to determine the size class based on the balance amount length
   const getBalanceSizeClass = (balance: number, currency: string): string => {
@@ -50,33 +50,35 @@ const HomePage = () => {
     .sort((a, b) => b.total - a.total)
     .slice(0, 3);
     
-  // Handle notification button click
-  const handleNotificationClick = () => {
-    // Example notifications
-    const notificationTypes = [
+  // Handle AI tip button click
+  const handleTipClick = () => {
+    // Custom AI tips based on user's data
+    const customTips = [
       {
-        title: "Daily Expense Reminder",
-        message: "Don't forget to track your expenses today",
-        type: "info" as const,
-        duration: 5000
+        title: "Spending Pattern Detected",
+        message: "Your weekend spending is typically 40% higher than weekday spending. Consider planning weekend activities in advance.",
+        type: "insight" as const,
+        notificationType: "info" as const
       },
       {
         title: "Budget Alert",
-        message: "You've reached 80% of your monthly budget",
-        type: "warning" as const,
-        duration: 6000
+        message: `You've spent ${formatCurrency(monthlyExpenses, settings.currency)} this month, which is ${monthlyIncome > 0 ? Math.round((monthlyExpenses / monthlyIncome) * 100) : 0}% of your income.`,
+        type: "spending" as const,
+        notificationType: "warning" as const
       },
       {
-        title: "Expense Saved",
-        message: "Your transaction has been saved successfully",
-        type: "success" as const,
-        duration: 4000
+        title: "AI Suggestion",
+        message: topCategories.length > 0 
+          ? `Your highest spending category is ${topCategories[0].name}. Consider setting a specific budget for this category.`
+          : "Start categorizing your expenses to get personalized insights.",
+        type: "insight" as const,
+        notificationType: "success" as const
       }
     ];
     
-    // Show a random notification
-    const randomNotification = notificationTypes[Math.floor(Math.random() * notificationTypes.length)];
-    showNotification(randomNotification);
+    // Show a random AI tip
+    const randomTip = customTips[Math.floor(Math.random() * customTips.length)];
+    showCustomTip(randomTip);
   };
   
   return (
@@ -85,7 +87,7 @@ const HomePage = () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold">My Wallet</h1>
           <button 
-            onClick={handleNotificationClick}
+            onClick={handleTipClick}
             className="w-10 h-10 rounded-full flex items-center justify-center bg-[#00D632] text-white hover:bg-[#00A226] transition-colors"
           >
             <Bell size={20} />

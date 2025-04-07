@@ -12,7 +12,7 @@ import AddTransactionPage from "./pages/AddTransactionPage";
 import TransactionsHistoryPage from "./pages/TransactionsHistoryPage";
 import { useTheme } from "./hooks/useTheme";
 import { ExpenseProvider } from "./context/ExpenseContext";
-import { NotificationProvider } from "./components/ui/notification";
+import { TipsProvider } from "./context/TipsContext";
 
 function App() {
   // Temporary solution to bypass auth context issue
@@ -62,7 +62,7 @@ function App() {
 
   // Only render ExpenseProvider when authenticated
   return (
-    <NotificationProvider>
+    <TipsProvider>
       <ExpenseProvider>
         <div className="min-h-screen bg-black text-white">
           <Switch>
@@ -78,7 +78,7 @@ function App() {
           <Toaster />
         </div>
       </ExpenseProvider>
-    </NotificationProvider>
+    </TipsProvider>
   );
 }
 

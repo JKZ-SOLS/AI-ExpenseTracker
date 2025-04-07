@@ -1,159 +1,120 @@
-import React, { useEffect, useState } from 'react';
-import { Bell, X } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-interface Notification {
-  id: string;
+export interface NotificationProps {
   title: string;
   message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-  duration?: number;
+  duration?: number; // Duration in milliseconds
+  type?: 'success' | 'info' | 'warning' | 'error';
+  onClose?: () => void;
+  isVisible: boolean;
 }
 
-interface NotificationContextType {
-  notifications: Notification[];
-  showNotification: (notification: Omit<Notification, 'id'>) => void;
-  dismissNotification: (id: string) => void;
-}
-
-const NotificationContext = React.createContext<NotificationContextType | undefined>(undefined);
-
-export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-
-  const showNotification = (notification: Omit<Notification, 'id'>) => {
-    const id = Math.random().toString(36).substring(2, 9);
-    setNotifications(prev => [...prev, { ...notification, id }]);
-  };
-
-  const dismissNotification = (id: string) => {
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
-  };
-
-  return (
-    <NotificationContext.Provider
-      value={{
-        notifications,
-        showNotification,
-        dismissNotification,
-      }}
-    >
-      {children}
-      <NotificationContainer 
-        notifications={notifications} 
-        dismissNotification={dismissNotification} 
-      />
-    </NotificationContext.Provider>
-  );
-};
-
-export const useNotification = () => {
-  const context = React.useContext(NotificationContext);
-  if (context === undefined) {
-    throw new Error('useNotification must be used within a NotificationProvider');
-  }
-  return context;
-};
-
-const NotificationContainer: React.FC<{
-  notifications: Notification[];
-  dismissNotification: (id: string) => void;
-}> = ({ notifications, dismissNotification }) => {
-  return (
-    <div className="fixed top-0 right-0 z-50 p-4 space-y-4 w-full md:max-w-sm">
-      <AnimatePresence>
-        {notifications.map(notification => (
-          <NotificationItem
-            key={notification.id}
-            notification={notification}
-            onDismiss={() => dismissNotification(notification.id)}
-          />
-        ))}
-      </AnimatePresence>
-    </div>
-  );
-};
-
-const NotificationItem: React.FC<{
-  notification: Notification;
-  onDismiss: () => void;
-}> = ({ notification, onDismiss }) => {
+export const Notification = ({
+  title,
+  message,
+  duration = 3000,
+  type = 'info',
+  onClose,
+  isVisible
+}: NotificationProps) => {
   const [progress, setProgress] = useState(100);
-  const duration = notification.duration || 5000;
-  
+  const [isClosing, setIsClosing] = useState(false);
+
+  // Reset progress when notification changes
   useEffect(() => {
-    const timer = setTimeout(() => {
-      onDismiss();
-    }, duration);
-    
-    // Create progress animation
-    const startTime = Date.now();
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const remaining = Math.max(0, (duration - elapsed) / duration * 100);
-      setProgress(remaining);
-      
-      if (elapsed >= duration) {
-        clearInterval(interval);
-      }
-    }, 50);
-
-    return () => {
-      clearTimeout(timer);
-      clearInterval(interval);
-    };
-  }, [notification, onDismiss, duration]);
-
-  const getBackgroundColor = () => {
-    switch (notification.type) {
-      case 'success':
-        return 'bg-[#00A226]';
-      case 'error':
-        return 'bg-red-600';
-      case 'warning':
-        return 'bg-amber-500';
-      default:
-        return 'bg-[#00A226]';
+    if (isVisible) {
+      setProgress(100);
+      setIsClosing(false);
     }
+  }, [isVisible, title, message]);
+
+  // Handle auto-dismiss with progress bar
+  useEffect(() => {
+    if (!isVisible || duration <= 0) return;
+
+    const startTime = Date.now();
+    const endTime = startTime + duration;
+    
+    const intervalId = setInterval(() => {
+      const now = Date.now();
+      const remaining = endTime - now;
+      const newProgress = (remaining / duration) * 100;
+      
+      if (remaining <= 0) {
+        clearInterval(intervalId);
+        setIsClosing(true);
+        setTimeout(() => {
+          if (onClose) onClose();
+        }, 300); // Allow time for exit animation
+      } else {
+        setProgress(newProgress);
+      }
+    }, 16); // Approx 60fps
+
+    return () => clearInterval(intervalId);
+  }, [isVisible, duration, onClose]);
+
+  // Handle dismiss
+  const handleDismiss = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      if (onClose) onClose();
+    }, 300);
   };
 
-  const getIcon = () => {
-    switch (notification.type) {
-      case 'info':
-      case 'success':
-      case 'warning':
-      case 'error':
-      default:
-        return <Bell className="w-5 h-5" />;
-    }
+  if (!isVisible) return null;
+
+  const typeStyles = {
+    success: 'bg-success/15 border-success',
+    info: 'bg-primary/15 border-primary',
+    warning: 'bg-warning/15 border-warning',
+    error: 'bg-destructive/15 border-destructive'
+  };
+
+  const typeProgressStyles = {
+    success: 'bg-success',
+    info: 'bg-primary',
+    warning: 'bg-warning',
+    error: 'bg-destructive'
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -50, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -20, scale: 0.9 }}
-      transition={{ duration: 0.2 }}
-      className={`${getBackgroundColor()} text-black px-4 pt-3 rounded-lg shadow-lg flex flex-col relative overflow-hidden`}
+    <div 
+      className={cn(
+        'fixed bottom-4 left-1/2 transform -translate-x-1/2 w-[90%] max-w-md z-50',
+        'transition-all duration-300 ease-in-out',
+        isClosing ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'
+      )}
     >
-      <div className="flex items-start pb-3">
-        <div className="mr-3 pt-0.5">
-          {getIcon()}
-        </div>
-        <div className="flex-1">
-          <h3 className="font-semibold">{notification.title}</h3>
-          <p className="text-sm opacity-90">{notification.message}</p>
-        </div>
-        <button onClick={onDismiss} className="p-1">
-          <X className="w-5 h-5" />
-        </button>
-      </div>
-      
-      {/* Progress bar */}
       <div 
-        className="h-1 bg-white/30 absolute bottom-0 left-0 transition-all" 
-        style={{ width: `${progress}%` }}
-      />
-    </motion.div>
+        className={cn(
+          'rounded-lg shadow-lg border p-4 relative overflow-hidden',
+          typeStyles[type]
+        )}
+      >
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="font-medium text-sm">{title}</h3>
+            <p className="text-xs opacity-80 mt-1">{message}</p>
+          </div>
+          <button 
+            onClick={handleDismiss}
+            className="p-1 rounded-full hover:bg-black/10 transition-colors"
+          >
+            <X size={16} />
+          </button>
+        </div>
+        
+        {/* Progress bar */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/10">
+          <div 
+            className={cn('h-full transition-all', typeProgressStyles[type])}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+    </div>
   );
 };
