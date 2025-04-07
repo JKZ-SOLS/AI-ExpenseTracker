@@ -4,10 +4,12 @@ import { useExpense } from '../context/ExpenseContext';
 import { formatCurrency } from '../lib/utils';
 import { useAuth } from '../context/AuthContext';
 import { Plus, ArrowUpCircle, ArrowDownCircle, DollarSign, PieChart, Bell, ShoppingBag } from 'lucide-react';
+import { useNotification } from '../components/ui/notification';
 
 const HomePage = () => {
   const { settings } = useAuth();
   const { transactions, categories, balance, monthlyIncome, monthlyExpenses } = useExpense();
+  const { showNotification } = useNotification();
   
   // Get latest 3 transactions
   const recentTransactions = transactions.slice(0, 3);
@@ -31,13 +33,45 @@ const HomePage = () => {
     })
     .sort((a, b) => b.total - a.total)
     .slice(0, 3);
+    
+  // Handle notification button click
+  const handleNotificationClick = () => {
+    // Example notifications
+    const notificationTypes = [
+      {
+        title: "Daily Expense Reminder",
+        message: "Don't forget to track your expenses today",
+        type: "info" as const,
+        duration: 5000
+      },
+      {
+        title: "Budget Alert",
+        message: "You've reached 80% of your monthly budget",
+        type: "warning" as const,
+        duration: 6000
+      },
+      {
+        title: "Expense Saved",
+        message: "Your transaction has been saved successfully",
+        type: "success" as const,
+        duration: 4000
+      }
+    ];
+    
+    // Show a random notification
+    const randomNotification = notificationTypes[Math.floor(Math.random() * notificationTypes.length)];
+    showNotification(randomNotification);
+  };
   
   return (
     <div className="min-h-screen pb-20">
       <div className="p-4 pt-12">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold">My Wallet</h1>
-          <button className="w-10 h-10 rounded-full flex items-center justify-center bg-[#00D632] text-white">
+          <button 
+            onClick={handleNotificationClick}
+            className="w-10 h-10 rounded-full flex items-center justify-center bg-[#00D632] text-white hover:bg-[#00A226] transition-colors"
+          >
             <Bell size={20} />
           </button>
         </div>

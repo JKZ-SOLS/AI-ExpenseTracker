@@ -194,27 +194,29 @@ const StatsPage = () => {
           )}
         </div>
         
-        {/* Monthly Comparison */}
-        <div className="glass-card rounded-xl p-5 mb-6">
-          <h2 className="font-semibold mb-4">Monthly Comparison</h2>
-          <div className="flex justify-between h-40 items-end mb-2">
-            {monthlyComparisonData.map((item, index) => {
-              // Find the highest amount to calculate percentages
-              const maxAmount = Math.max(...monthlyComparisonData.map(item => item.amount));
-              const heightPercentage = maxAmount > 0 ? (item.amount / maxAmount) * 100 : 0;
-              
-              return (
-                <div key={index} className="flex flex-col items-center">
-                  <div 
-                    className={`w-8 ${item.isCurrentMonth ? 'bg-primary' : 'bg-primary/20'} rounded-t-md`} 
-                    style={{ height: `${heightPercentage}%` }}
-                  ></div>
-                  <span className="text-xs mt-1">{item.month}</span>
-                </div>
-              );
-            })}
+        {/* Monthly Comparison - only show if there's data */}
+        {monthlyComparisonData.some(item => item.amount > 0) && (
+          <div className="glass-card rounded-xl p-5 mb-6">
+            <h2 className="font-semibold mb-4">Monthly Comparison</h2>
+            <div className="flex justify-between h-40 items-end mb-2">
+              {monthlyComparisonData.map((item, index) => {
+                // Find the highest amount to calculate percentages
+                const maxAmount = Math.max(...monthlyComparisonData.map(item => item.amount));
+                const heightPercentage = maxAmount > 0 ? (item.amount / maxAmount) * 100 : 0;
+                
+                return (
+                  <div key={item.month} className="flex flex-col items-center">
+                    <div 
+                      className={`w-8 ${item.isCurrentMonth ? 'bg-primary' : 'bg-primary/20'} rounded-t-md`} 
+                      style={{ height: `${heightPercentage}%` }}
+                    ></div>
+                    <span className="text-xs mt-1">{item.month}</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

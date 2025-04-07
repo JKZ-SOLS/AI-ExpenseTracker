@@ -78,13 +78,31 @@ const NotificationItem: React.FC<{
   notification: Notification;
   onDismiss: () => void;
 }> = ({ notification, onDismiss }) => {
+  const [progress, setProgress] = useState(100);
+  const duration = notification.duration || 5000;
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       onDismiss();
-    }, notification.duration || 5000);
+    }, duration);
+    
+    // Create progress animation
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const remaining = Math.max(0, (duration - elapsed) / duration * 100);
+      setProgress(remaining);
+      
+      if (elapsed >= duration) {
+        clearInterval(interval);
+      }
+    }, 50);
 
-    return () => clearTimeout(timer);
-  }, [notification, onDismiss]);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
+  }, [notification, onDismiss, duration]);
 
   const getBackgroundColor = () => {
     switch (notification.type) {
@@ -116,18 +134,26 @@ const NotificationItem: React.FC<{
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -20, scale: 0.9 }}
       transition={{ duration: 0.2 }}
-      className={`${getBackgroundColor()} text-black px-4 py-3 rounded-lg shadow-lg flex items-start`}
+      className={`${getBackgroundColor()} text-black px-4 pt-3 rounded-lg shadow-lg flex flex-col relative overflow-hidden`}
     >
-      <div className="mr-3 pt-0.5">
-        {getIcon()}
+      <div className="flex items-start pb-3">
+        <div className="mr-3 pt-0.5">
+          {getIcon()}
+        </div>
+        <div className="flex-1">
+          <h3 className="font-semibold">{notification.title}</h3>
+          <p className="text-sm opacity-90">{notification.message}</p>
+        </div>
+        <button onClick={onDismiss} className="p-1">
+          <X className="w-5 h-5" />
+        </button>
       </div>
-      <div className="flex-1">
-        <h3 className="font-semibold">{notification.title}</h3>
-        <p className="text-sm opacity-90">{notification.message}</p>
-      </div>
-      <button onClick={onDismiss} className="p-1">
-        <X className="w-5 h-5" />
-      </button>
+      
+      {/* Progress bar */}
+      <div 
+        className="h-1 bg-white/30 absolute bottom-0 left-0 transition-all" 
+        style={{ width: `${progress}%` }}
+      />
     </motion.div>
   );
 };
