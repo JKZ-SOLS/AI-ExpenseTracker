@@ -17,7 +17,7 @@ export const Notification = ({
   duration = 5000,
   type = 'info',
   onClose,
-  isVisible
+  isVisible,
 }: NotificationProps) => {
   const [progress, setProgress] = useState(100);
   const [isClosing, setIsClosing] = useState(false);
@@ -35,82 +35,85 @@ export const Notification = ({
     if (!isVisible || duration <= 0) return;
 
     const startTime = Date.now();
-    const endTime = startTime + duration;
-    
-    const intervalId = setInterval(() => {
+    const animationFrame = () => {
       const now = Date.now();
-      const remaining = endTime - now;
+      const elapsed = now - startTime;
+      const remaining = duration - elapsed;
       const newProgress = (remaining / duration) * 100;
-      
+
       if (remaining <= 0) {
-        clearInterval(intervalId);
         setIsClosing(true);
         setTimeout(() => {
-          if (onClose) onClose();
-        }, 300); // Allow time for exit animation
+          onClose?.();
+        }, 300);
       } else {
         setProgress(newProgress);
+        requestId = requestAnimationFrame(animationFrame);
       }
-    }, 16); // Approx 60fps
+    };
 
-    return () => clearInterval(intervalId);
+    let requestId = requestAnimationFrame(animationFrame);
+    return () => cancelAnimationFrame(requestId);
   }, [isVisible, duration, onClose]);
 
   // Handle dismiss
   const handleDismiss = () => {
     setIsClosing(true);
     setTimeout(() => {
-      if (onClose) onClose();
+      onClose?.();
     }, 300);
   };
 
   if (!isVisible) return null;
 
   const typeStyles = {
-    success: 'bg-success/15 border-success',
-    info: 'bg-primary/15 border-primary',
-    warning: 'bg-warning/15 border-warning',
-    error: 'bg-destructive/15 border-destructive'
+    success: 'bg-success/80 border-success text-success-foreground',
+    info: 'bg-primary/80 border-primary text-primary-foreground',
+    warning: 'bg-warning/80 border-warning text-warning-foreground',
+    error: 'bg-destructive/80 border-destructive text-destructive-foreground',
   };
 
   const typeProgressStyles = {
     success: 'bg-success',
     info: 'bg-primary',
     warning: 'bg-warning',
-    error: 'bg-destructive'
+    error: 'bg-destructive',
   };
 
   return (
-    <div 
+    <div
+      role="alert"
+      aria-live="assertive"
       className={cn(
-        'fixed top-4 left-1/2 transform -translate-x-1/2 w-[90%] max-w-md z-50',
+        'fixed top-4 left-1/2 transform -translate-x-1/2 w-[90%] max-w-md z-[100]',
         'transition-all duration-300 ease-in-out',
-        isClosing ? 'opacity-0 -translate-y-4' : 'opacity-100 translate-y-0'
+        isClosing ? 'opacity-0 -translate-y-4' : 'opacity-100 translate-y-0',
       )}
     >
-      <div 
+      <div
         className={cn(
-          'rounded-lg shadow-lg border p-4 relative overflow-hidden',
-          typeStyles[type]
+          'rounded-lg shadow-xl border p-4 relative overflow-hidden',
+          typeStyles[type],
         )}
       >
         <div className="flex justify-between items-start">
           <div>
             <h3 className="font-medium text-sm">{title}</h3>
-            <p className="text-xs opacity-80 mt-1">{message}</p>
+            <p className="text-xs mt-1">{message}</p>
           </div>
-          <button 
+          <button
             onClick={handleDismiss}
-            className="p-1 rounded-full hover:bg-black/10 transition-colors"
+            aria-label="Close notification"
+            className="p-1 rounded-full hover:bg-black/20 transition-colors"
           >
             <X size={16} />
           </button>
         </div>
-        
+
         {/* Progress bar */}
         <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/10">
-          <div 
-            className={cn('h-full transition-all', typeProgressStyles[type])}
+          <div
+            className={cn('h-full transition-none', typeProgressStyles[type])}
             style={{ width: `${progress}%` }}
           />
         </div>

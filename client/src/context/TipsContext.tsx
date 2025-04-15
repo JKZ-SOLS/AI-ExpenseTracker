@@ -218,7 +218,7 @@ export const TipsProvider = ({ children }: { children: ReactNode }) => {
           title={currentTip.title}
           message={currentTip.message}
           type={currentTip.notificationType || 'info'}
-          duration={5000} // 5 seconds, as requested
+          duration={3000} // 5 seconds, as requested
           isVisible={isVisible}
           onClose={dismissTip}
         />

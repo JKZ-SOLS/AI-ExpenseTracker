@@ -125,8 +125,8 @@ const HomePage = () => {
               </div>
               <div className="text-xs mt-1 opacity-70">Tap to add income</div>
             </Link>
-            <Link href="/add-transaction?type=expense" className="mini-card">
-              <p className="text-xs opacity-80 mb-1">Monthly Expenses</p>
+            <Link href="/add-transaction?type=expense" className="mini-card" style={{ textDecoration: "none" }}>
+              <p className="text-xs opacity-80 mb-1 ">Monthly Expenses</p>
               <div className="flex items-center justify-between">
                 <span className="text-base font-semibold">{formatCurrency(monthlyExpenses, settings.currency)}</span>
                 <div className="bg-black/20 rounded-full p-1">

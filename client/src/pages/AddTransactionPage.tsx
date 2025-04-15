@@ -267,25 +267,7 @@ const AddTransactionPage = () => {
         <div className="glass-card rounded-xl p-5 mb-6">
           <form onSubmit={handleSubmit}>
             {/* Transaction Type */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium mb-2">Transaction Type</label>
-              <div className="flex rounded-md overflow-hidden bg-white/20 dark:bg-neutral-700/20 p-1">
-                <button
-                  type="button"
-                  className={`flex-1 py-2 rounded-md ${type === 'expense' ? 'bg-primary text-white' : ''}`}
-                  onClick={() => setType('expense')}
-                >
-                  Expense
-                </button>
-                <button
-                  type="button"
-                  className={`flex-1 py-2 rounded-md ${type === 'income' ? 'bg-success text-white' : ''}`}
-                  onClick={() => setType('income')}
-                >
-                  Income
-                </button>
-              </div>
-            </div>
+            
             
             {/* Amount Input */}
             <div className="mb-4">
